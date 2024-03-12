@@ -31,7 +31,7 @@ ___<__(|) _   **-/  / /   /
       /  / /   /  
      /  |,'   /  
     :   /    /
-    [  /   ,'     ~>Berserk-Ware - DDoS Tool<~
+    [  /   ,'     ~>Berserk-Ware - Mjolnir Web Server Stresser<~
     | /  ,'    
     |/,-'
     '
