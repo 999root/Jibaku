@@ -1,9 +1,5 @@
 
 import requests
-import smtplib
-from smtplib import SMTP # Email
-from email.message import EmailMessage # email spam
-
 import random
 import threading
 import sys
@@ -60,55 +56,6 @@ def sendhttp():
 
 
 
-
-def smtpsend():
-    try:
-        print("\n\n")
-        with SMTP(url, port, timeout=10) as smtp:
-            response = smtp.noop()
-        if response[0] == 250:
-            print("                  ~> Server has SMTP here.\n\n\n")
-
-            sender_email = input("                  ~> Sender: ")
-            recipient_email = input("                  ~> Recipient: ")
-
-            # Create the Email
-            msg = EmailMessage()
-            msg.set_content("This is a test email sent via Python.")
-
-            msg['Subject'] = "Test Email from Python"
-            msg['From'] = sender_email
-            msg['To'] = recipient_email
-
-            try:
-                with smtplib.SMTP(url, port, timeout=10) as server:
-                    server.send_message(msg)
-                    print("                  ~> Email sent successfully.")
-            except Exception as e:
-                print(f"                  ~> Failed to send email. Error: {e}")
-
-
-        else:
-            print(f"                  ~> No SMTP at Port: {port}")
-    except KeyboardInterrupt:
-        print("                  ~> Bye bitch !!!")
-    except TimeoutError:
-        print("                  ~> Timedout (Ports not open)")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Creates the Threading and Runs the script to DDoS a HTTP/HTTPS Server
 def website_attack():
 
@@ -134,18 +81,9 @@ def website_attack():
 
     print(f"\n\n\nThreads:\n\n{threads}\n\n")
 
-def mail_attack():
-    global url
-    global port
-    url = input(">>> ")
-    port = input(">>> ")
-    smtpsend()
-
 # UI
 print(f"\n\n{snake}\n\n")
 ui = input("                  ~> ")
 
 if ui in ['website', '80', '8000', '8080', 'Website', 'Website']:
     website_attack()
-elif ui in ['mail', 'smtp', 'mailserver']:
-    mail_attack()
