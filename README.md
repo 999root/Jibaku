@@ -1,5 +1,7 @@
 # Berserk-Ware
-999root's Hacking Library
+999root's Hacking Library.
+
+Ethical use only.
 
 - DDoS Tools
 - Networking Tools
