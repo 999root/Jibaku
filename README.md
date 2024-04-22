@@ -1,4 +1,4 @@
-# Berserk-Ware
+# Jibaku-Ware
 999root's Hacking Library.
 
 Ethical use only.
