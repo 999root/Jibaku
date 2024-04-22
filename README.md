@@ -11,8 +11,8 @@ This library is souly for educational purposes. I do not condone Black Hat Hacki
 ## How to ethically use this
 Create a server with a cloud hosting company and setup webservers, or just any type of server to practice your attack with, Docker containers can be created in seconds.
 
-## Fujin - DDos Module
-Fujin is a Python DDoS module that I created to help and guide people into creating their own scripts. It contains many functions that can help take down websites, and techniques to avoid and optimise the speed of your attacks. Such as pooling managers, sessions, caching, and custom headers/data. There is documentation in the folder to help guide you use and understand the functions.
+## Fujin - DDoS Module
+Fujin is a Python DDoS module that I created to help and guide people into creating their own scripts. It contains many functions that can help take down websites, and techniques to avoid and optimise the speed of your attacks. Such as pooling managers, sessions, caching, Async, and custom headers/data. There is documentation in the folder to help guide you use and understand the functions. Best example of Object-Orientated Programming.
 
 ## Gargantua - DDoS with proxy rotating feature
 Gargantua is a python ddos that scrapes socks5, socks4, http and https proxies with the proxio module and use them to attack websites. It's a simple proxy rotator that can surprisingly attack websites at high speeds. This method of attack makes it extremely difficult for websites to block incoming attackers.
