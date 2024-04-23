@@ -158,9 +158,9 @@ class Fujin:
         for x in range(threads):
             t = threading.Thread(target=self.begin_sync_attack, daemon=daemon)
             self.sync_threads.append(t)
-        for x in range(50):
+        for x in range(threads):
             self.sync_threads[x].start()
-        for x in range(50):
+        for x in range(threads):
             self.sync_threads[x].join()
 
 
