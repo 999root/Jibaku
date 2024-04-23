@@ -48,7 +48,6 @@ def banner():
                     \______  (____  /__|  \___  (____  /___|  /__| |____/(____  /
                             \/     \/     /_____/     \/     \/                \/ 
 
-                          <-- The Fastest Proxy DDoS tool on the web -->
 """
     print(bcolors.OKGREEN + string + bcolors.ENDC)
 
