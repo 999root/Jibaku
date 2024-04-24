@@ -1,9 +1,11 @@
 # Documentation
 Happy learnings
 
+## Install
+
 ## Initialise Object
 ```
-from Fujin import fujin
+from Fujin import Fujin
 
 url = "https://999root.xyz/"
 
