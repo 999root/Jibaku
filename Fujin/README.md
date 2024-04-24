@@ -2,6 +2,9 @@
 Happy learnings
 
 ## Install
+```
+pip install Fujin
+```
 
 ## Initialise Object
 ```
