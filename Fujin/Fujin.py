@@ -120,7 +120,6 @@ class Fujin:
     # Async and Sync GET Requests
     #
     async def async_get(self) -> None:
-
         """
         A Normal GET request that uses the 'requests' module
 
@@ -151,7 +150,6 @@ class Fujin:
     
 
     def sync_get(self) -> None:
-
         """
         A simple synchronous function that allows you to run a GET request
         """
@@ -221,7 +219,6 @@ class Fujin:
     # Infinite loops for Async and Sync functions
     #
     def begin_async_get_attack(self) -> None:   
-
         """
         while 1:
             asyncio.run(self.async_get(self))
@@ -466,7 +463,6 @@ class Fujin:
                                number_of_processes: int | None = None, 
                                daemon: bool | None = None,
                                pooling_manager: str | None = None) -> None:
-
         """
         Uses the multiprocessing function to speed up the attack.
 
