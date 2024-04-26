@@ -1,4 +1,4 @@
-<div align="center"><img width="1000" src="https://i.pinimg.com/originals/f0/dd/38/f0dd387a63748ab3806e9c0771aebf57.jpg"></div>
+<div align="center"><img width="800" height="341" src="https://i.pinimg.com/originals/c7/5d/9f/c75d9f6c146cc00a019a7311ce93e5f5.jpg"></div>
 <h1 align="center">Jibaku-Ware</h1>
 999root's Hacking Library.
 
