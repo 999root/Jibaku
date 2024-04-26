@@ -28,3 +28,6 @@ Named after the fat eagle in god of war game, Hraesvalgr is a DDoS tool using pr
 
 ## Mjolnir - DDoS Script
 Named after the Norse god of thunder's hammer, Mjolnir is a simple DDoS tool to help beginners understand a very small scale DDoS attack. This attack can be ran on multiple computers and still cause significant damage. Helps users understand that no matter the size and simplicity of the script it still can cause heavy damage.
+
+<br>
+<div align="center"><img width="800" height="341" src="https://66.media.tumblr.com/19b97acf38d9137eaa7d7e3b4e05f106/tumblr_nf96kaQF1w1tf5s2xo10_500.gif"></div>
