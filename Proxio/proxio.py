@@ -1,4 +1,8 @@
+
+# Imports
 import requests
+
+
 
 
 class Scrape:
@@ -29,6 +33,8 @@ class Scrape:
         self.write_to_txt(proxies)
         array = self.structure()
         return array
+
+
 
 
 class Filter:
@@ -73,10 +79,11 @@ class Filter:
 
 
 
+
 class Socks4:
     def check_socks4_proxy(proxy):
         try:
-            response = requests.get("https://www.example.com", proxies={"socks4": proxy}, timeout=5)
+            response = requests.get("https://999root.xyz", proxies={"socks4": proxy}, timeout=5)
             if response.status_code == 200:
                 return "SUCCESS"
             else:
@@ -95,7 +102,7 @@ class Socks4:
 class Socks5:
     def check_socks5_proxy(proxy):
         try:
-            response = requests.get("https://www.example.com", proxies={"socks5": proxy}, timeout=5)
+            response = requests.get("https://999root.xyz", proxies={"socks5": proxy}, timeout=5)
             if response.status_code == 200:
                 return "SUCCESS"
             else:
@@ -114,7 +121,7 @@ class Socks5:
 class HTTP:
     def check_http_proxy(proxy):
         try:
-            response = requests.get("https://www.example.com", proxies={"http": proxy}, timeout=5)
+            response = requests.get("https://999root.xyz", proxies={"http": proxy}, timeout=5)
             if response.status_code == 200:
                 return "SUCCESS"
             else:
@@ -133,7 +140,7 @@ class HTTP:
 class HTTPS:
     def check_https_proxy(proxy):
         try:
-            response = requests.get("https://www.example.com", proxies={"https": proxy}, timeout=5)
+            response = requests.get("https://999root.xyz", proxies={"https": proxy}, timeout=5)
             if response.status_code == 200:
                 return "SUCCESS"
             else:
@@ -149,9 +156,12 @@ class HTTPS:
             print(f"Proxy {proxy}: {result}")
         return results
 
+
+
+
 class Proxio:
     def __init__(self):
-        # Initialise Filter and Scraper Objects for ease of use
+        """ Quick use of the entire proxio module """
         self.filter = Filter()
         self.scraper = Scrape()
 
