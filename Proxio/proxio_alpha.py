@@ -89,27 +89,28 @@ class Socks5:
             print(f"Proxy {proxy}: {result}")
         return results
 
-# Step 1: Scrape proxies from API
-proxies_text = scrape_proxies()
-
-# Step 2: Write scraped proxies to file
-write_to_txt(proxies_text)
-
-# Step 3: Read proxies from file
-proxies_array = structure()
-
-# Step 4: Filter Proxies into their own seperate arrays
-socks4_proxies = Filter.filter_socks4_proxies(proxies_array)
-socks5_proxies = Filter.filter_socks5_proxies(proxies_array)
-http_proxies = Filter.filter_http_proxies(proxies_array)
-https_proxies = Filter.filter_https_proxies(proxies_array)
-
-# Step 5: Check status of SOCKS4 proxies
-socks4_results = Socks4.check_socks4_proxies(socks4_proxies)
-socks5_results = Socks5.check_socks5_proxies(socks5_proxies)
-
-
-# Additional: Write results to a file if needed
-with open("proxy_check_results.txt", "w") as f:
-    for proxy, result in zip(socks4_proxies, socks5_results):
-        f.write(f"Proxy {proxy}: {result}\n")
+def main():
+    # Step 1: Scrape proxies from API
+    proxies_text = scrape_proxies()
+    
+    # Step 2: Write scraped proxies to file
+    write_to_txt(proxies_text)
+    
+    # Step 3: Read proxies from file
+    proxies_array = structure()
+    
+    # Step 4: Filter Proxies into their own seperate arrays
+    socks4_proxies = Filter.filter_socks4_proxies(proxies_array)
+    socks5_proxies = Filter.filter_socks5_proxies(proxies_array)
+    http_proxies = Filter.filter_http_proxies(proxies_array)
+    https_proxies = Filter.filter_https_proxies(proxies_array)
+    
+    # Step 5: Check status of SOCKS4 proxies
+    socks4_results = Socks4.check_socks4_proxies(socks4_proxies)
+    socks5_results = Socks5.check_socks5_proxies(socks5_proxies)
+    
+    
+    # Additional: Write results to a file if needed
+    with open("proxy_check_results.txt", "w") as f:
+        for proxy, result in zip(socks4_proxies, socks5_results):
+            f.write(f"Proxy {proxy}: {result}\n")
