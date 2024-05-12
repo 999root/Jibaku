@@ -22,7 +22,7 @@ class Scrape:
             f.write(proxies)
 
     def structure(self) -> list:
-        with open(self.file_name, self.open_type) as f:
+        with open(self.file_name, 'r') as f:
             proxies = f.readlines()
         for proxy in proxies:
             self.array.append(proxy.strip())
