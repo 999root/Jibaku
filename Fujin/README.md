@@ -69,6 +69,8 @@ Fujin gives you a choice of 3 pooling managers
 
 Make sure you choose a pooling manager otherwise the program will prompt you to choose one. I do this because some of the pooling managers are freakishly powerful
 
+<img src="https://cdn.haproxy.com/wp-content/uploads/2020/12/Perisitent-connection.png" width="400">
+
 #### Python requests
 ```
 ddos = fujin(url="fuckingwebsite.com")
