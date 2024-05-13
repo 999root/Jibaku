@@ -94,6 +94,24 @@ ddos = fujin(url="http://fuckingwebsite.com")
 ddos.thread_async_attack(threads=50, pooling_manager="socket")
 ```
 
+# Threading Setup
+```
+# Array Data Structure to store your threads in
+threads = []
+
+# Number of threads
+threads = 50
+
+for x in range(threads):
+  t = threading.Thread(target=attack_initialiser, args=[url, headers]
+  t.daemon = True
+  t.start() # Saves us opening up a 3rd separate loop
+  threads.append(t)
+
+for x in range(threads):
+  threads[x].join()
+```
+
 # Example Script
 ```
 from Fujin import fujin
